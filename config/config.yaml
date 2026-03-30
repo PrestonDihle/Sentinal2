@@ -1,0 +1,178 @@
+# SENTINEL2 Pipeline Configuration
+# Autonomous Strategic Intelligence Pipeline v2.0
+
+pipeline:
+  name: "SENTINEL2"
+  version: "2.0.0"
+  run_time: "06:00"
+  timezone: "America/New_York"
+
+# Database — SQLite (single file, zero infrastructure)
+database:
+  sqlite_path: "data/sentinel2.db"
+
+# LLM Model Routing (dual-provider: Gemini + Claude)
+llm:
+  providers:
+    gemini:
+      api_key_env: "GEMINI_API_KEY"
+      timeout_ms: 300000
+      rate_limits:
+        flash:
+          requests_per_minute: 15
+          requests_per_day: 1500
+          tokens_per_minute: 1000000
+      retry:
+        max_retries: 3
+        backoff_seconds: 60
+    anthropic:
+      api_key_env: "ANTHROPIC_API_KEY"
+      timeout_seconds: 300
+      rate_limits:
+        sonnet:
+          requests_per_minute: 50
+          requests_per_day: 5000
+        opus:
+          requests_per_minute: 20
+          requests_per_day: 1000
+      retry:
+        max_retries: 3
+        backoff_seconds: 30
+
+# GDELT Configuration
+gdelt:
+  doc_api_base: "https://api.gdeltproject.org/api/v2/doc/doc"
+  geo_api_base: "https://api.gdeltproject.org/api/v2/geo/geo"
+  gkg_bulk_base: "http://data.gdeltproject.org/gdeltv2"
+  event_bulk_base: "http://data.gdeltproject.org/gdeltv2"
+  max_articles_per_query: 250
+  max_queries_per_run: 80
+  request_delay_seconds: 2.5
+
+# Collection Manager Agent
+cma:
+  max_queries_per_day: 25
+  min_queries_per_day: 10
+  yield_thresholds:
+    retire_after_low_yield_days: 3
+    promote_on_high_significance: true
+    max_query_age_days: 14
+  ai_pir_refresh:
+    pir3_review_frequency_days: 3
+    pir4_review_frequency_days: 3
+
+# Search (supplementary)
+search:
+  max_results_per_query: 10
+  max_queries_per_run: 20
+
+# Delivery
+delivery:
+  google_drive:
+    daily_folder_id_env: "SENTINEL_DRIVE_DAILY_FOLDER_ID"
+    weekly_folder_id_env: "SENTINEL_DRIVE_WEEKLY_FOLDER_ID"
+    monthly_folder_id_env: "SENTINEL_DRIVE_MONTHLY_FOLDER_ID"
+    black_swan_folder_id_env: "SENTINEL_DRIVE_BSA_FOLDER_ID"
+    filename_pattern: "SENTINEL2_{date}.pdf"
+  gmail:
+    sender_email: "preston.dihle@gmail.com"
+    subject_pattern: "SENTINEL2 Daily Intelligence Report — {date}"
+
+# Reports
+reports:
+  daily_dir: "reports/daily"
+  weekly_dir: "reports/weekly"
+  monthly_dir: "reports/monthly"
+  black_swan_dir: "reports/black_swan"
+
+# Quantitative Metrics
+metrics:
+  enabled: true
+  scoring:
+    z_score_threshold: 2.0
+    baseline_window_days: 90
+    short_window_days: 30
+  api_keys_env:
+    nasa_firms: "NASA_FIRMS_API_KEY"
+    cloudflare: "CLOUDFLARE_API_KEY"
+    acled_key: "ACLED_API_KEY"
+    acled_email: "ACLED_EMAIL"
+    censys_id: "CENSYS_API_ID"
+    censys_secret: "CENSYS_API_SECRET"
+    zoomeye: "ZOOMEYE_API_KEY"
+    shodan: "SHODAN_API_KEY"
+    youtube: "YOUTUBE_API_KEY"
+    openweathermap: "OWM_API_KEY"
+    copernicus: "COPERNICUS_ADS_KEY"
+    alpha_vantage: "ALPHA_VANTAGE_API_KEY"
+    bigquery_project: "BIGQUERY_PROJECT_ID"
+  retry:
+    max_retries: 3
+    backoff_seconds: [30, 60, 120]
+
+# Logging
+logging:
+  level: "INFO"
+  file: "logs/pipeline.log"
+  max_size_mb: 50
+  backup_count: 5
+
+# Initialization seed queries
+initialization:
+  seed_queries:
+    - query: "Iranian militia repositioning Iraq Syria"
+      pir: "PIR1"
+      sir: "SIR1.1.1"
+      priority: 1
+      query_type: "gdelt_doc"
+    - query: "GPS jamming Eastern Mediterranean aviation"
+      pir: "PIR1"
+      sir: "SIR1.4.1"
+      priority: 1
+      query_type: "gdelt_doc"
+    - query: "Strait of Hormuz commercial shipping threat"
+      pir: "PIR2"
+      sir: "SIR2.1.1"
+      priority: 1
+      query_type: "gdelt_doc"
+    - query: "NATO Response Force readiness posture"
+      pir: "PIR2"
+      sir: "SIR2.2.2"
+      priority: 2
+      query_type: "gdelt_doc"
+    - query: "Brent crude oil price volatility Middle East conflict"
+      pir: "PIR2"
+      sir: "SIR2.1.2"
+      priority: 2
+      query_type: "gdelt_doc"
+    - query: "Hezbollah military activity Lebanon Israel border"
+      pir: "PIR1"
+      sir: "SIR1.1.1"
+      priority: 1
+      query_type: "gdelt_doc"
+    - query: "SCADA cyber attack Middle East infrastructure"
+      pir: "PIR1"
+      sir: "SIR1.2.1"
+      priority: 1
+      query_type: "gdelt_doc"
+    - query: "Red Sea shipping attacks Houthi"
+      pir: "PIR2"
+      sir: "SIR2.3.1"
+      priority: 1
+      query_type: "gdelt_doc"
+    - query: "Iran nuclear enrichment IAEA"
+      pir: "PIR1"
+      sir: "SIR1.8.1"
+      priority: 2
+      query_type: "gdelt_doc"
+    - query: "Middle East diplomatic breakdown negotiations"
+      pir: "PIR1"
+      sir: "SIR1.3.1"
+      priority: 2
+      query_type: "gdelt_doc"
+  ai_pir3_seed: >
+    What emerging developments among the 20 monitored countries or 15 monitored
+    groups are not addressed by PIR 1 or PIR 2?
+  ai_pir4_seed: >
+    How are adversary actors adapting their gray-zone and hybrid warfare tactics
+    in response to current conditions in the greater Middle East?

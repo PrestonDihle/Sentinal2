@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Environment
+.env
+.venv/
+venv/
+env/
+
+# Auth credentials
+auth/credentials.json
+auth/token.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/*.log
+logs/results/*.json
+
+# Reports (generated)
+reports/daily/*.pdf
+reports/weekly/*.pdf
+reports/monthly/*.pdf
+reports/black_swan/*.pdf
+
+# Agent memory (generated per-run)
+memory/agents/*/
+
+# MySQL data (Docker volume)
+mysql_data/
+
+# SQLite database (generated)
+data/sentinel2.db
+data/sentinel2.db-shm
+data/sentinel2.db-wal
+
+# Auth directory
+auth/

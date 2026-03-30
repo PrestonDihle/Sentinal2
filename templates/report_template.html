@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: 'Georgia', serif; font-size: 10pt; color: #1a1a1a;
+           margin: 1.5cm 2cm; line-height: 1.45; }
+    h1   { font-size: 13pt; text-transform: uppercase; letter-spacing: 0.1em;
+           border-bottom: 2px solid #1a1a1a; padding-bottom: 3px; margin-top: 1em;
+           margin-bottom: 0.4em; }
+    h2   { font-size: 11pt; color: #2c2c6e; margin-top: 0.8em; margin-bottom: 0.3em; }
+    p    { margin: 0.3em 0; }
+    .header-block { background: #1a1a1a; color: white; padding: 10px 14px;
+                    margin-bottom: 14px; }
+    .header-block p { margin: 1px 0; font-size: 9pt; }
+    .sig-high   { color: #b22222; font-weight: bold; }
+    .sig-medium { color: #cc7000; font-weight: bold; }
+    .sig-low    { color: #2a6e2a; }
+    .confidence { font-style: italic; font-size: 9pt; color: #555; }
+    .confidence-legend { font-size: 7.5pt; color: #555; border: 1px solid #ddd;
+                         padding: 4px 10px; margin: 6px 0; background: #fafafa;
+                         line-height: 1.6; }
+    .black-swan-box { border: 1.5px solid #b22222; padding: 8px 12px;
+                      background: #fff5f5; margin: 0.5em 0; font-size: 9.5pt; }
+    .footer { font-size: 7.5pt; color: #888; text-align: center;
+              border-top: 1px solid #ccc; margin-top: 1.2em; padding-top: 4px; }
+    table  { width: 100%; border-collapse: collapse; font-size: 9pt; margin: 0.4em 0; }
+    th     { background: #2c2c6e; color: white; padding: 4px 6px; text-align: left; }
+    td     { padding: 3px 6px; border-bottom: 1px solid #ddd; }
+    tr:nth-child(even) { background: #f7f7f7; }
+    .metrics-bar { display: flex; gap: 20px; font-size: 9pt; margin: 0.3em 0 0.6em 0; }
+    .metric { }
+    .metric .val { font-size: 13pt; font-weight: bold; }
+    ul { margin: 0.2em 0 0.3em 1.4em; padding: 0; }
+    li { margin-bottom: 0.15em; }
+    .predictive-tag { display: inline-block; background: #2c2c6e; color: white;
+                      font-size: 7pt; padding: 1px 5px; border-radius: 2px;
+                      vertical-align: middle; margin-left: 4px; }
+    @page  { size: A4; margin: 1.5cm 2cm;
+             @top-center { content: "SENTINEL2 // UNCLASSIFIED // AI GENERATED";
+                           font-size: 7.5pt; color: #888; }
+             @bottom-right { content: "Page " counter(page) " of "
+                             counter(pages); font-size: 7.5pt; color: #888; } }
+  </style>
+</head>
+<body>
+  <div class="header-block">
+    <p><strong>SENTINEL2 DAILY INTELLIGENCE BRIEF</strong></p>
+    <p>DATE: {{ run_date }} | CYCLE: Day {{ cycle_number }}</p>
+    <p>PREPARED FOR: Strategic Intelligence Consumers</p>
+    <p>CLASSIFICATION: UNCLASSIFIED // AI GENERATED</p>
+  </div>
+
+  <h1>Executive Summary</h1>
+  <div class="metrics-bar">
+    <div class="metric">Items collected: <span class="val">{{ total_items }}</span></div>
+    <div class="metric"><span class="sig-high">HIGH: {{ high_count }}</span></div>
+    <div class="metric"><span class="sig-medium">MED: {{ med_count }}</span></div>
+    <div class="metric">SIRs addressed: <span class="val">{{ sir_count }}</span></div>
+  </div>
+  <p>{{ executive_summary }}</p>
+
+  {% if diff_summary %}
+  {{ diff_summary }}
+  {% endif %}
+
+  {% if pir_trajectory_section %}
+  {{ pir_trajectory_section }}
+  {% endif %}
+
+  <h1>Key SIGACTs <span class="predictive-tag">72-HR OUTLOOK</span></h1>
+  {{ sigacts_table }}
+
+  <h1>PIR Status <span class="predictive-tag">PREDICTIVE</span></h1>
+  <h2>PIR 1 &mdash; Regional Instability</h2>
+  {{ pir1_content }}
+  <h2>PIR 2 &mdash; Global Security &amp; Force Deployment</h2>
+  {{ pir2_content }}
+  <h2>PIR 3 &mdash; Emerging Threads (AI-Defined)</h2>
+  {{ pir3_content }}
+  <h2>PIR 4 &mdash; Adversary Adaptation (AI-Defined)</h2>
+  {{ pir4_content }}
+
+  <h1>Black Swan Watch <span class="predictive-tag">INDICATORS</span></h1>
+  <div class="black-swan-box">{{ black_swan_content }}</div>
+
+  <h1>Big Question &mdash; Structural Trajectory</h1>
+  {{ big_question_content }}
+
+  <h1>Metrics Dashboard</h1>
+  {{ metrics_trend_section }}
+
+  <div class="confidence-legend">
+    <strong>ICD 203 Confidence Scale:</strong>
+    <strong>High</strong> &mdash; well-corroborated information; solid analytic logic |
+    <strong>Moderate</strong> &mdash; credibly sourced and plausible but not sufficiently
+    corroborated to warrant high confidence |
+    <strong>Low</strong> &mdash; questionable or implausible information; analytic logic
+    has gaps.<br>
+    <strong>Probability Language:</strong>
+    Almost certain (&gt;95%) | Likely (55&ndash;95%) | Roughly even (45&ndash;55%) |
+    Unlikely (5&ndash;45%) | Remote (&lt;5%)
+  </div>
+
+  <div class="footer">
+    SENTINEL2 Strategic Intelligence Pipeline | Objective. Non-Partisan. Actionable.
+    | Next Report: {{ next_date }} 0600 Local | UNCLASSIFIED // AI GENERATED
+  </div>
+</body>
+</html>

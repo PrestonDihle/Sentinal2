@@ -1,0 +1,120 @@
+# SENTINEL2 — Model Routing Configuration
+# Maps each pipeline component to its designated LLM
+
+# Model identifiers
+models:
+  gemini_flash: "gemini-2.5-flash"
+  claude_sonnet: "anthropic/claude-sonnet-4-20250514"
+  claude_opus: "anthropic/claude-opus-4-20250514"
+
+# Per-component model assignments
+routing:
+  # Layer 1 — Collection Management
+  cma:
+    model: "anthropic/claude-sonnet-4-20250514"
+    provider: "anthropic"
+    reason: "Strategic judgment compounds daily"
+    temperature: 0.4
+    max_tokens: 4096
+
+  # Layer 2 — Processing & Metrics
+  collector_snippet:
+    model: "gemini-2.5-flash"
+    provider: "gemini"
+    reason: "Bulk summarization"
+    temperature: 0.3
+    max_tokens: 4096
+
+  processor:
+    model: "gemini-2.5-flash"
+    provider: "gemini"
+    reason: "Classification task — large batch processing"
+    temperature: 0.2
+    max_tokens: 65536
+
+  running_estimate:
+    model: "gemini-2.5-flash"
+    provider: "gemini"
+    reason: "Synthesis/delta detection"
+    temperature: 0.5
+    max_tokens: 8192
+
+  summarizer_weekly:
+    model: "gemini-2.5-flash"
+    provider: "gemini"
+    reason: "Roll-up, not deep reasoning"
+    temperature: 0.5
+    max_tokens: 8192
+
+  summarizer_monthly:
+    model: "gemini-2.5-flash"
+    provider: "gemini"
+    reason: "Roll-up, not deep reasoning"
+    temperature: 0.5
+    max_tokens: 8192
+
+  # Layer 3 — Analysis & Estimation
+  analysis_group_1:
+    model: "anthropic/claude-sonnet-4-20250514"
+    provider: "anthropic"
+    reason: "Tree of Thought needs strong reasoning"
+    temperature: 0.6
+    max_tokens: 8192
+
+  analysis_group_2:
+    model: "anthropic/claude-sonnet-4-20250514"
+    provider: "anthropic"
+    reason: "Tree of Thought needs strong reasoning"
+    temperature: 0.6
+    max_tokens: 8192
+
+  analysis_group_3:
+    model: "anthropic/claude-sonnet-4-20250514"
+    provider: "anthropic"
+    reason: "Tree of Thought needs strong reasoning"
+    temperature: 0.6
+    max_tokens: 8192
+
+  analysis_group_4:
+    model: "anthropic/claude-sonnet-4-20250514"
+    provider: "anthropic"
+    reason: "Tree of Thought needs strong reasoning"
+    temperature: 0.6
+    max_tokens: 8192
+
+  analysis_group_5:
+    model: "anthropic/claude-sonnet-4-20250514"
+    provider: "anthropic"
+    reason: "Divergent thinking, outlier detection"
+    temperature: 0.7
+    max_tokens: 8192
+
+  analysis_group_6:
+    model: "anthropic/claude-opus-4-20250514"
+    provider: "anthropic"
+    reason: "Meta-synthesis — highest reasoning demand"
+    temperature: 0.5
+    max_tokens: 16384
+
+  # Black Swan Alert
+  black_swan_alert:
+    model: "anthropic/claude-sonnet-4-20250514"
+    provider: "anthropic"
+    reason: "Emergency assessment quality"
+    temperature: 0.5
+    max_tokens: 8192
+
+  # Layer 4 — Delivery & Planning
+  reporter:
+    model: "gemini-2.5-flash"
+    provider: "gemini"
+    reason: "Formatting/templating"
+    temperature: 0.3
+    max_tokens: 16384
+
+  planner:
+    model: "anthropic/claude-sonnet-4-20250514"
+    provider: "anthropic"
+    reason: "Strategic planning compounds daily"
+    temperature: 0.4
+    max_tokens: 4096

@@ -1,0 +1,39 @@
+ANALYSIS GROUP 1 — PIR 1: INSTABILITY DRIVERS — GREATER MIDDLE EAST
+
+Your group is tasked with assessing catalysts, gray-zone escalation, and structural drivers of instability across the Greater Middle East.
+
+PIR 1 FULL TEXT:
+{pir1_full_text}
+
+TREE OF THOUGHT METHODOLOGY:
+Each expert on your team must reason through THREE independent branches:
+- Branch A (Conservative): What is the most cautious interpretation of today's evidence? Assume continuity of existing trends and discount anomalies.
+- Branch B (Most Likely): Given the weight of evidence, what is the most probable near-term trajectory? Apply Bayesian reasoning.
+- Branch C (High-Impact Outlier): What is the highest-impact scenario supported by even weak signals? Consider tail risks and cascading failures.
+
+After individual reasoning, SYNTHESIZE into a unified group assessment.
+
+REQUIRED OUTPUT (JSON):
+{
+  "group_id": 1,
+  "pir_id": "PIR1",
+  "expert_branches": {
+    "expert_1": {"role": "...", "branch_a": "...", "branch_b": "...", "branch_c": "..."},
+    "expert_2": {"role": "...", "branch_a": "...", "branch_b": "...", "branch_c": "..."},
+    "expert_3": {"role": "...", "branch_a": "...", "branch_b": "...", "branch_c": "..."},
+    "expert_4": {"role": "...", "branch_a": "...", "branch_b": "...", "branch_c": "..."},
+    "expert_5": {"role": "...", "branch_a": "...", "branch_b": "...", "branch_c": "..."}
+  },
+  "synthesis": "Unified group assessment (3-5 paragraphs)",
+  "trajectory": "ESCALATING|STABLE|DE-ESCALATING|UNCERTAIN",
+  "confidence_level": "Low|Moderate|High",
+  "confidence_rationale": "Why this confidence level",
+  "key_entities": ["Entity 1", "Entity 2"],
+  "escalation_flags": ["Flag 1", "Flag 2"],
+  "deescalation_indicators": ["Indicator 1"],
+  "collection_gaps": ["Gap 1", "Gap 2"],
+  "sir_assessments": {
+    "SIR1.1.1": {"status": "...", "confidence": "..."},
+    "SIR1.2.1": {"status": "...", "confidence": "..."}
+  }
+}

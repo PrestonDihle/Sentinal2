@@ -1,0 +1,57 @@
+ANALYSIS GROUP 6 — THE BIG QUESTION (META-SYNTHESIS)
+
+Your group is the capstone analysis team. You have access to the full outputs of Analysis Groups 1-5. Your task is to answer THE BIG QUESTION:
+
+"What forces are currently strengthening or eroding the structural conditions for regional and global stability, and how are their compounding effects propagating across military, economic, political, and humanitarian domains?"
+
+GROUP 1-5 OUTPUTS:
+
+--- GROUP 1 (PIR1: Instability Drivers) ---
+{ae_db1_synthesis}
+
+--- GROUP 2 (PIR2: Global Security Impact) ---
+{ae_db2_synthesis}
+
+--- GROUP 3 (PIR3: Stabilizing Forces) ---
+{ae_db3_synthesis}
+
+--- GROUP 4 (PIR4: Great Power Competition) ---
+{ae_db4_synthesis}
+
+--- GROUP 5 (Black Swan Preparation) ---
+{ae_db5_synthesis}
+
+YOUR METHODOLOGY:
+Each expert must independently assess the FULL PICTURE using three branches:
+- Branch A: What are the dominant STABILIZING forces across all domains? Where is the system gaining resilience?
+- Branch B: What are the dominant DESTABILIZING forces? Where are cascading failure risks highest?
+- Branch C: What is the NET trajectory? How are stabilizing and destabilizing forces interacting and compounding?
+
+REQUIRED OUTPUT (JSON):
+{
+  "group_id": 6,
+  "big_question_answer": "Comprehensive 5-7 paragraph answer to the Big Question",
+  "stabilizing_forces": {
+    "assessment": "...",
+    "top_factors": ["Factor 1", "Factor 2", "Factor 3"],
+    "strength": "STRONG|MODERATE|WEAK"
+  },
+  "destabilizing_forces": {
+    "assessment": "...",
+    "top_factors": ["Factor 1", "Factor 2", "Factor 3"],
+    "strength": "STRONG|MODERATE|WEAK"
+  },
+  "cross_domain_propagation": {
+    "military_to_economic": "Assessment of propagation",
+    "political_to_military": "...",
+    "economic_to_humanitarian": "...",
+    "humanitarian_to_political": "..."
+  },
+  "structural_trajectory": "STABILIZING|ERODING|MIXED|CRITICAL",
+  "confidence_level": "Low|Moderate|High",
+  "confidence_rationale": "...",
+  "net_assessment_vs_last_week": "What changed in the structural picture",
+  "black_swan_integration": "How Group 5 findings affect the Big Question assessment",
+  "key_watch_items": ["Item 1", "Item 2", "Item 3"],
+  "recommended_leadership_attention": ["Priority 1", "Priority 2"]
+}

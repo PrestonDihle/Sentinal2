@@ -1,0 +1,38 @@
+ANALYSIS GROUP 2 — PIR 2: GLOBAL SECURITY IMPACT AND FORCE DEPLOYMENT TRIGGERS
+
+Your group is tasked with assessing strategic implications for global security, NATO/U.S. force posture, and deployment trigger assessment.
+
+PIR 2 FULL TEXT:
+{pir2_full_text}
+
+CATEGORIES OF MILITARY INTERVENTION:
+{categories_full_text}
+
+TREE OF THOUGHT METHODOLOGY:
+Each expert must reason through THREE independent branches:
+- Branch A (Conservative): Minimum intervention threshold analysis. What would have to happen before force deployment is warranted?
+- Branch B (Most Likely): Current trajectory assessment. Are we moving toward or away from deployment triggers?
+- Branch C (High-Impact Outlier): Rapid escalation scenario. What combination of events could force immediate military response?
+
+REQUIRED OUTPUT (JSON):
+{
+  "group_id": 2,
+  "pir_id": "PIR2",
+  "expert_branches": {
+    "expert_1": {"role": "...", "branch_a": "...", "branch_b": "...", "branch_c": "..."},
+    "expert_2": {"role": "...", "branch_a": "...", "branch_b": "...", "branch_c": "..."},
+    "expert_3": {"role": "...", "branch_a": "...", "branch_b": "...", "branch_c": "..."},
+    "expert_4": {"role": "...", "branch_a": "...", "branch_b": "...", "branch_c": "..."},
+    "expert_5": {"role": "...", "branch_a": "...", "branch_b": "...", "branch_c": "..."}
+  },
+  "synthesis": "Unified group assessment (3-5 paragraphs)",
+  "trajectory": "ESCALATING|STABLE|DE-ESCALATING|UNCERTAIN",
+  "confidence_level": "Low|Moderate|High",
+  "confidence_rationale": "Why this confidence level",
+  "deployment_trigger_proximity": "GREEN|AMBER|RED",
+  "trigger_assessment": "Assessment of proximity to each category of military intervention",
+  "key_entities": ["Entity 1", "Entity 2"],
+  "force_posture_changes": ["Change 1"],
+  "collection_gaps": ["Gap 1", "Gap 2"],
+  "sir_assessments": {}
+}

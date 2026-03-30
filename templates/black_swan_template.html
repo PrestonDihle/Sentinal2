@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: 'Georgia', serif; font-size: 11pt; color: #1a1a1a; margin: 2cm; }
+    h1 { font-size: 14pt; text-transform: uppercase; letter-spacing: 0.1em;
+         border-bottom: 2px solid #b22222; padding-bottom: 4px; color: #b22222; }
+    h2 { font-size: 12pt; color: #2c2c6e; margin-top: 1.4em; }
+    h3 { font-size: 11pt; color: #444; }
+    .header-block { background: #b22222; color: white; padding: 14px 18px;
+                    margin-bottom: 20px; }
+    .header-block p { margin: 2px 0; font-size: 10pt; }
+    .header-block .precedence { font-size: 14pt; font-weight: bold;
+                                 letter-spacing: 0.15em; margin-top: 6px; }
+    .section { margin-bottom: 1.5em; }
+    .evidence-box { border-left: 4px solid #b22222; padding: 8px 14px;
+                    margin: 0.8em 0; background: #fff5f5; }
+    .impact-tier { border: 1px solid #ddd; padding: 10px 14px; margin: 0.5em 0;
+                   background: #fafafa; }
+    .impact-tier h3 { margin-top: 0; }
+    .advisory-caveat { font-size: 9.5pt; color: #666; font-style: italic;
+                       border: 1px dashed #999; padding: 8px; margin: 1em 0; }
+    .footer { font-size: 8pt; color: #888; text-align: center;
+              border-top: 1px solid #ccc; margin-top: 2em; padding-top: 6px; }
+    .separator { border: none; border-top: 3px double #b22222; margin: 1.5em 0; }
+    @page { size: A4; margin: 2cm;
+            @top-center { content: "SENTINEL2 BLACK SWAN ALERT // UNCLASSIFIED // AI GENERATED";
+                          font-size: 8pt; color: #b22222; }
+            @bottom-right { content: "Page " counter(page) " of " counter(pages);
+                            font-size: 8pt; color: #888; } }
+  </style>
+</head>
+<body>
+  <div class="header-block">
+    <p><strong>SENTINEL2 BLACK SWAN ALERT &mdash; OUT OF CYCLE</strong></p>
+    <p>ISSUED: {{ issued_at }}</p>
+    <p>ALERT #: {{ alert_id }}</p>
+    <p class="precedence">PRECEDENCE: IMMEDIATE</p>
+  </div>
+
+  <hr class="separator">
+
+  <div class="section">
+    <h1>Section 1: Alert Summary</h1>
+    <p>{{ alert_summary }}</p>
+  </div>
+
+  <div class="section">
+    <h1>Section 2: Event Characterization</h1>
+    <h2>2.1 Description</h2>
+    {{ event_description }}
+    <h2>2.2 Classification</h2>
+    {{ event_classification }}
+    <h2>2.3 Status</h2>
+    <p>{{ event_status }}</p>
+  </div>
+
+  <div class="section">
+    <h1>Section 3: Supporting Evidence</h1>
+    <div class="evidence-box">
+      <h2>3.1 Evidence from Today's Collection</h2>
+      {{ today_evidence }}
+      <h2>3.2 Weak Signals Observed</h2>
+      {{ weak_signals }}
+      <h2>3.3 Disconfirming Evidence</h2>
+      {{ disconfirming_evidence }}
+      <h2>3.4 Source Quality Assessment</h2>
+      {{ source_quality }}
+    </div>
+  </div>
+
+  <div class="section">
+    <h1>Section 4: Impact Assessment</h1>
+    <div class="impact-tier">
+      <h3>4.1 Immediate Effects (0&ndash;72 hours)</h3>
+      {{ impact_immediate }}
+    </div>
+    <div class="impact-tier">
+      <h3>4.2 Second-Order Effects (1&ndash;4 weeks)</h3>
+      {{ impact_second_order }}
+    </div>
+    <div class="impact-tier">
+      <h3>4.3 Third-Order Effects (1&ndash;3 months)</h3>
+      {{ impact_third_order }}
+    </div>
+    <h2>4.4 Effects on PIR 1 and PIR 2 Assessments</h2>
+    {{ impact_on_pirs }}
+    <h2>4.5 Worst-Case Scenario</h2>
+    {{ worst_case }}
+  </div>
+
+  <div class="section">
+    <h1>Section 5: Recommended Actions</h1>
+    <h2>5.1 Intelligence Collection</h2>
+    {{ rec_collection }}
+    <h2>5.2 Indicators to Watch</h2>
+    {{ rec_indicators }}
+    <h2>5.3 Analytical</h2>
+    {{ rec_analytical }}
+    <h2>5.4 Operational</h2>
+    {{ rec_operational }}
+    <div class="advisory-caveat">
+      NOTE: Operational recommendations are advisory. Command authority rests
+      with the supported unit. This pipeline provides intelligence, not orders.
+    </div>
+  </div>
+
+  <div class="section">
+    <h1>Section 6: Historical Analogue</h1>
+    {{ historical_analogue }}
+  </div>
+
+  <div class="section">
+    <h1>Section 7: Collection Plan Recommendation</h1>
+    {{ collection_recommendation }}
+  </div>
+
+  <hr class="separator">
+
+  <div class="footer">
+    Next scheduled daily report: {{ next_date }} 0600 local<br>
+    SENTINEL2 Strategic Intelligence Pipeline | Objective. Non-Partisan. Actionable.<br>
+    UNCLASSIFIED // AI GENERATED
+  </div>
+</body>
+</html>

@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "sentinel2"
+version = "2.0.0"
+description = "Autonomous strategic intelligence pipeline for the Greater Middle East and Caucasus"
+requires-python = ">=3.12"
+dependencies = [
+    "crewai[tools]>=0.80.0",
+    "anthropic>=0.40.0",
+    "google-genai>=1.0.0",
+    "mysql-connector-python>=9.0.0",
+    "python-dotenv>=1.0.0",
+    "pyyaml>=6.0",
+    "jinja2>=3.1.0",
+    "xhtml2pdf>=0.2.16",
+    "beautifulsoup4>=4.12.0",
+    "requests>=2.31.0",
+    "feedparser>=6.0.0",
+    "duckduckgo-search>=6.0.0",
+    "google-auth>=2.29.0",
+    "google-auth-oauthlib>=1.2.0",
+    "google-api-python-client>=2.120.0",
+    "numpy>=1.26.0",
+    "pandas>=2.2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "black>=24.0.0",
+    "ruff>=0.3.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[project.scripts]
+sentinel2 = "src.pipeline:main"

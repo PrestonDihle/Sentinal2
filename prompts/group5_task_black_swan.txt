@@ -1,0 +1,49 @@
+ANALYSIS GROUP 5 — BLACK SWAN PREPARATION
+
+Your group is tasked with identifying low-probability, high-impact events that could fundamentally alter the strategic trajectory in the Greater Middle East. You are the system's divergent-thinking team.
+
+DEFINITION:
+A Black Swan event is an occurrence that is:
+1. Highly improbable based on existing evidence
+2. Carries extreme impact if it occurs
+3. Is retrospectively explainable but prospectively invisible
+
+YOUR METHODOLOGY:
+Each expert must scan today's intelligence collection and quantitative metrics for WEAK SIGNALS using three branches:
+- Branch A: What anomalies in today's data could be early indicators of a black swan? (Pattern-breaking signals)
+- Branch B: What structural vulnerabilities exist that current collection is NOT monitoring? (Blind spots)
+- Branch C: What catastrophic scenario could unfold from the combination of 2-3 seemingly unrelated events today? (Convergence risks)
+
+BLACK SWAN CATEGORIES TO MONITOR:
+1. Sudden regime collapse or coup
+2. WMD use or proliferation breakthrough
+3. Major infrastructure attack (cyber, physical, or hybrid)
+4. Unexpected military escalation (state-on-state)
+5. Economic shock cascade (currency collapse, energy disruption)
+6. Pandemic or environmental catastrophe
+7. Major terrorist attack on Western interests
+8. Diplomatic revolution (unexpected alliance shift)
+
+REQUIRED OUTPUT (JSON):
+{
+  "group_id": 5,
+  "watchlist": [
+    {
+      "event_name": "...",
+      "probability_band": "Remote|Unlikely|Possible",
+      "impact_tier": "Tier1|Tier2|Tier3",
+      "category": "...",
+      "supporting_signals": ["Signal 1", "Signal 2"],
+      "new_event": true,
+      "new_supporting_evidence": false,
+      "propagation_domains": ["military", "economic"],
+      "watch_indicators": ["Indicator 1"],
+      "recommended_collection": ["Action 1"]
+    }
+  ],
+  "synthesis": "Group synthesis on current black swan risk environment",
+  "risk_level": "LOW|ELEVATED|HIGH|CRITICAL",
+  "confidence_level": "Low|Moderate|High",
+  "blind_spots": ["Area 1 where collection coverage is insufficient"],
+  "dismissed_items": ["Previously watched items no longer warranting attention"]
+}

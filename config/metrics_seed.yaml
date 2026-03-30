@@ -1,0 +1,333 @@
+# SENTINEL2 — Quantitative Metrics Registry (30 metrics)
+# Seed data for the `metrics` table
+
+metrics:
+  - id: 1
+    name: "Brent-WTI Spread"
+    domain: "Financial"
+    source: "Yahoo Finance"
+    tier: 1
+    collection_fn: "financial.collect_brent_wti_spread"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "both"
+    notes: "Spread between Brent and WTI crude oil benchmarks"
+
+  - id: 2
+    name: "NASA FIRMS Thermal Anomalies"
+    domain: "Geophysical"
+    source: "NASA FIRMS API"
+    tier: 1
+    collection_fn: "geophysical.collect_firms_hotspots"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "high"
+    notes: "Fire/thermal anomalies in ME/Caucasus region"
+
+  - id: 3
+    name: "Cloudflare Radar Traffic"
+    domain: "Internet"
+    source: "Cloudflare Radar"
+    tier: 2
+    collection_fn: "internet.collect_cloudflare_radar"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "low"
+    notes: "Internet traffic drops indicate disruption or censorship"
+
+  - id: 4
+    name: "GDELT Conflict Events"
+    domain: "Conflict"
+    source: "GDELT Event Exports"
+    tier: 1
+    collection_fn: "conflict.collect_gdelt_events"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "high"
+    notes: "CAMEO-coded conflict events in monitored countries"
+
+  - id: 5
+    name: "ADS-B Military Flight Activity"
+    domain: "Airspace"
+    source: "ADS-B Exchange"
+    tier: 1
+    collection_fn: "airspace.collect_adsb_military"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "high"
+    notes: "Military aircraft activity in ME/Caucasus airspace"
+
+  - id: 6
+    name: "GPS Jamming Incidents"
+    domain: "Airspace"
+    source: "GPSJam.org"
+    tier: 1
+    collection_fn: "airspace.collect_gps_jamming"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "high"
+    notes: "GPS interference events in Eastern Mediterranean"
+
+  - id: 7
+    name: "Shodan ICS Exposure"
+    domain: "Internet"
+    source: "Shodan API"
+    tier: 2
+    collection_fn: "internet.collect_shodan_ics"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "high"
+    notes: "Exposed industrial control systems in monitored countries"
+
+  - id: 8
+    name: "Social Media Sentiment (ME)"
+    domain: "Behavioral"
+    source: "GDELT DOC API"
+    tier: 1
+    collection_fn: "behavioral.collect_gdelt_sentiment"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "low"
+    notes: "Aggregate tone from GDELT DOC API for ME region"
+
+  - id: 9
+    name: "Brent Crude Price"
+    domain: "Financial"
+    source: "Yahoo Finance"
+    tier: 1
+    collection_fn: "financial.collect_brent_crude"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "both"
+    notes: "Daily Brent crude oil price"
+
+  - id: 10
+    name: "Currency Volatility Index"
+    domain: "Financial"
+    source: "Open Exchange Rates"
+    tier: 2
+    collection_fn: "financial.collect_currency_volatility"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "high"
+    notes: "Composite volatility of regional currencies"
+
+  - id: 11
+    name: "Maritime AIS Dark Ships"
+    domain: "Maritime"
+    source: "MarineTraffic"
+    tier: 1
+    collection_fn: "maritime.collect_dark_ships"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "high"
+    notes: "Vessels with AIS transponders off in Gulf/Red Sea"
+
+  - id: 12
+    name: "Suez Canal Transit Count"
+    domain: "Maritime"
+    source: "Suez Canal Authority"
+    tier: 1
+    collection_fn: "maritime.collect_suez_transits"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "low"
+    notes: "Daily vessel transits through Suez Canal"
+
+  - id: 13
+    name: "UNHCR Displacement Figures"
+    domain: "Humanitarian"
+    source: "UNHCR API"
+    tier: 2
+    collection_fn: "humanitarian.collect_unhcr_displacement"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "high"
+    notes: "Regional refugee and IDP displacement numbers"
+
+  - id: 14
+    name: "GDELT Goldstein Scale (ME Dyads)"
+    domain: "News/Conflict"
+    source: "GDELT DOC API"
+    tier: 1
+    collection_fn: "gdelt.collect_goldstein_scale"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "low"
+    notes: "Average Goldstein conflict-cooperation score for ME dyads"
+
+  - id: 15
+    name: "GDELT Tone + Article Volume"
+    domain: "News/Attention"
+    source: "GDELT DOC API"
+    tier: 1
+    collection_fn: "gdelt.collect_tone_volume"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "both"
+    notes: "Average tone and volume of ME-related articles"
+
+  - id: 16
+    name: "Censys Exposed Infrastructure"
+    domain: "Internet"
+    source: "Censys API"
+    tier: 2
+    collection_fn: "internet.collect_censys_exposed"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "high"
+    notes: "Exposed critical infrastructure endpoints in monitored countries"
+
+  - id: 17
+    name: "Food Price Index (ME)"
+    domain: "Humanitarian"
+    source: "FAO/WFP"
+    tier: 2
+    collection_fn: "humanitarian.collect_food_prices"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "high"
+    notes: "FAO food price index for ME region"
+
+  - id: 18
+    name: "Sovereign CDS Spreads"
+    domain: "Financial"
+    source: "Market data"
+    tier: 2
+    collection_fn: "financial.collect_cds_spreads"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "high"
+    notes: "Credit default swap spreads for regional sovereigns"
+
+  - id: 19
+    name: "Telegram Channel Activity"
+    domain: "Behavioral"
+    source: "Telegram API"
+    tier: 2
+    collection_fn: "behavioral.collect_telegram_activity"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "high"
+    notes: "Message volume in monitored ME Telegram channels"
+
+  - id: 20
+    name: "Aviation NOTAMs (ME)"
+    domain: "Airspace"
+    source: "FAA/ICAO"
+    tier: 1
+    collection_fn: "airspace.collect_notams"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "high"
+    notes: "Notices to Air Missions affecting ME/Caucasus airspace"
+
+  - id: 21
+    name: "Seismic Activity (Anatolian)"
+    domain: "Geophysical"
+    source: "USGS API"
+    tier: 2
+    collection_fn: "geophysical.collect_seismic"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "high"
+    notes: "Earthquake activity along Anatolian/Caucasus fault zones"
+
+  - id: 22
+    name: "Red Sea Shipping Diversions"
+    domain: "Maritime"
+    source: "Lloyd's/AIS data"
+    tier: 1
+    collection_fn: "maritime.collect_red_sea_diversions"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "high"
+    notes: "Vessels diverting around Cape of Good Hope vs Red Sea transit"
+
+  - id: 23
+    name: "Iran Rial (BonBast)"
+    domain: "Financial"
+    source: "BonBast.com"
+    tier: 1
+    collection_fn: "financial.collect_iran_rial"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "high"
+    notes: "Iran Rial black market exchange rate"
+
+  - id: 24
+    name: "Turkish Lira Volatility"
+    domain: "Financial"
+    source: "Open Exchange Rates"
+    tier: 1
+    collection_fn: "financial.collect_try_volatility"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "high"
+    notes: "Turkish Lira daily volatility"
+
+  - id: 25
+    name: "YouTube Propaganda Volume"
+    domain: "Behavioral"
+    source: "YouTube Data API"
+    tier: 3
+    collection_fn: "behavioral.collect_youtube_propaganda"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "high"
+    notes: "Volume of propaganda-tagged content from ME region"
+
+  - id: 26
+    name: "Port Activity (Jebel Ali/Baku)"
+    domain: "Maritime"
+    source: "Port authorities"
+    tier: 2
+    collection_fn: "maritime.collect_port_activity"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "both"
+    notes: "Vessel arrivals/departures at key regional ports"
+
+  - id: 27
+    name: "CISA/INCD Cyber Alerts"
+    domain: "Internet"
+    source: "CISA RSS"
+    tier: 1
+    collection_fn: "internet.collect_cisa_alerts"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "high"
+    notes: "Cybersecurity alerts relevant to ME infrastructure"
+
+  - id: 28
+    name: "IAEA Inspection Reports"
+    domain: "Geophysical"
+    source: "IAEA.org"
+    tier: 1
+    collection_fn: "geophysical.collect_iaea_reports"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "high"
+    notes: "IAEA inspection activity and reports on Iran"
+
+  - id: 29
+    name: "ACLED Protest Events (ME)"
+    domain: "Conflict"
+    source: "ACLED/GDELT"
+    tier: 1
+    collection_fn: "conflict.collect_acled_protests"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "high"
+    notes: "Protest and civil unrest events in monitored countries"
+
+  - id: 30
+    name: "GDELT Front Page ME Count"
+    domain: "News/Prominence"
+    source: "GDELT DOC API"
+    tier: 1
+    collection_fn: "gdelt.collect_front_page_count"
+    baseline_window: 90
+    alert_threshold: 2.0
+    direction: "high"
+    notes: "Number of front-page articles mentioning ME region"

@@ -1,0 +1,36 @@
+ANALYSIS GROUP 4 — PIR 4: GREAT POWER COMPETITION AND THIRD-PARTY CONFLICT SHAPING
+
+Your group is tasked with assessing Russian diplomatic cover, Chinese economic enabling, and Sino-Russian strategic coordination in the Middle East and Caucasus. This is an AI-defined PIR.
+
+PIR 4 FULL TEXT:
+{pir4_full_text}
+
+TREE OF THOUGHT METHODOLOGY:
+Each expert must reason through THREE independent branches:
+- Branch A (Conservative): What great power activities represent continuity of existing policy vs genuine escalation?
+- Branch B (Most Likely): How are Russia and China currently shaping the conflict environment through gray-zone activities?
+- Branch C (High-Impact Outlier): What great power escalation scenario could fundamentally alter the regional balance?
+
+REQUIRED OUTPUT (JSON):
+{
+  "group_id": 4,
+  "pir_id": "PIR4",
+  "expert_branches": {
+    "expert_1": {"role": "...", "branch_a": "...", "branch_b": "...", "branch_c": "..."},
+    "expert_2": {"role": "...", "branch_a": "...", "branch_b": "...", "branch_c": "..."},
+    "expert_3": {"role": "...", "branch_a": "...", "branch_b": "...", "branch_c": "..."},
+    "expert_4": {"role": "...", "branch_a": "...", "branch_b": "...", "branch_c": "..."},
+    "expert_5": {"role": "...", "branch_a": "...", "branch_b": "...", "branch_c": "..."}
+  },
+  "synthesis": "Unified group assessment (3-5 paragraphs)",
+  "trajectory": "ESCALATING|STABLE|DE-ESCALATING|UNCERTAIN",
+  "confidence_level": "Low|Moderate|High",
+  "confidence_rationale": "Why this confidence level",
+  "russia_assessment": "Russia's current ME posture and objectives",
+  "china_assessment": "China's current economic/diplomatic enabling activities",
+  "coordination_level": "Assessment of Sino-Russian strategic coordination",
+  "key_entities": ["Entity 1", "Entity 2"],
+  "pir_refinement_suggestion": "If PIR4 scope should be adjusted, describe how",
+  "collection_gaps": ["Gap 1", "Gap 2"],
+  "sir_assessments": {}
+}

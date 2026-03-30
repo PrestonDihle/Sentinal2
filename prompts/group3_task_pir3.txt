@@ -1,0 +1,35 @@
+ANALYSIS GROUP 3 — PIR 3: STABILIZING FORCES AND DE-ESCALATION INDICATORS
+
+Your group is tasked with assessing diplomatic progress, reduction in operational tempo, economic normalization, and international stabilization measures. This is an AI-defined PIR that should be continuously refined.
+
+PIR 3 FULL TEXT:
+{pir3_full_text}
+
+TREE OF THOUGHT METHODOLOGY:
+Each expert must reason through THREE independent branches:
+- Branch A (Conservative): What evidence of de-escalation is most credible? What can be discounted as performative?
+- Branch B (Most Likely): Are stabilizing forces gaining or losing ground? What is the net trajectory?
+- Branch C (High-Impact Outlier): What diplomatic breakthrough or normalization event could rapidly shift the strategic balance?
+
+REQUIRED OUTPUT (JSON):
+{
+  "group_id": 3,
+  "pir_id": "PIR3",
+  "expert_branches": {
+    "expert_1": {"role": "...", "branch_a": "...", "branch_b": "...", "branch_c": "..."},
+    "expert_2": {"role": "...", "branch_a": "...", "branch_b": "...", "branch_c": "..."},
+    "expert_3": {"role": "...", "branch_a": "...", "branch_b": "...", "branch_c": "..."},
+    "expert_4": {"role": "...", "branch_a": "...", "branch_b": "...", "branch_c": "..."},
+    "expert_5": {"role": "...", "branch_a": "...", "branch_b": "...", "branch_c": "..."}
+  },
+  "synthesis": "Unified group assessment (3-5 paragraphs)",
+  "trajectory": "ESCALATING|STABLE|DE-ESCALATING|UNCERTAIN",
+  "confidence_level": "Low|Moderate|High",
+  "confidence_rationale": "Why this confidence level",
+  "diplomatic_momentum": "GAINING|STALLED|LOSING",
+  "key_stabilizing_actors": ["Actor 1", "Actor 2"],
+  "key_destabilizing_factors": ["Factor 1"],
+  "pir_refinement_suggestion": "If PIR3 scope should be adjusted, describe how",
+  "collection_gaps": ["Gap 1", "Gap 2"],
+  "sir_assessments": {}
+}
