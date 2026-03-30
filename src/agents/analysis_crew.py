@@ -124,22 +124,50 @@ def _run_group(group_id: int, context: dict, run_date: str) -> dict:
         )
         task_text = task_text.replace("{categories_full_text}", cat_text)
 
-    # Create CrewAI Task — the lead agent drives, all agents contribute context
-    lead_agent = agents[0]
-    crew_task = Task(
-        description=system_prompt + "\n\n" + task_text,
+    # Create per-agent branch tasks + final synthesis task
+    tasks = []
+
+    # Each expert produces their 3 ToT branches independently
+    for i, agent in enumerate(agents[:-1]):  # All but last
+        branch_task = Task(
+            description=(
+                f"{system_prompt}\n\n{task_text}\n\n"
+                f"You are Expert {i+1}. Produce your THREE independent "
+                f"reasoning branches (A: Conservative, B: Most Likely, "
+                f"C: High-Impact Outlier) based on the context above. "
+                f"Be specific, cite evidence, and use ICD 203 confidence language."
+            ),
+            expected_output=(
+                f"Expert {i+1} Tree of Thought branches: "
+                f"branch_a (conservative), branch_b (most likely), "
+                f"branch_c (high-impact outlier), each 2-3 paragraphs."
+            ),
+            agent=agent,
+        )
+        tasks.append(branch_task)
+
+    # Final agent synthesizes all branches into the group output
+    synthesis_task = Task(
+        description=(
+            f"{system_prompt}\n\n{task_text}\n\n"
+            f"You are the synthesis lead. Review all expert branches above "
+            f"and produce the UNIFIED GROUP ASSESSMENT as structured JSON. "
+            f"Integrate all expert perspectives, resolve disagreements, "
+            f"and produce the final trajectory and confidence assessment."
+        ),
         expected_output=(
             "Structured JSON with: group synthesis, trajectory assessment, "
             "ICD 203 confidence level, collection gaps, and per-expert "
             "Tree of Thought branches (A, B, C)."
         ),
-        agent=lead_agent,
+        agent=agents[-1],
+        context=tasks,  # Feed all branch outputs as context
     )
+    tasks.append(synthesis_task)
 
-    # Create and run the Crew
     crew = Crew(
         agents=agents,
-        tasks=[crew_task],
+        tasks=tasks,
         process=Process.sequential,
         verbose=True,
     )
@@ -183,21 +211,46 @@ def _run_group_6(
         else:
             task_text = task_text.replace(placeholder, str(prev_output))
 
-    lead_agent = agents[0]
-    crew_task = Task(
-        description=system_prompt + "\n\n" + task_text,
+    # Per-agent branch tasks + synthesis (same pattern as Groups 1-5)
+    tasks = []
+    for i, agent in enumerate(agents[:-1]):
+        branch_task = Task(
+            description=(
+                f"{system_prompt}\n\n{task_text}\n\n"
+                f"You are Expert {i+1}. Produce your THREE independent "
+                f"meta-synthesis branches: A (dominant stabilizing forces), "
+                f"B (dominant destabilizing forces), C (net trajectory and "
+                f"cross-domain propagation). Cite evidence from all 5 groups."
+            ),
+            expected_output=(
+                f"Expert {i+1} meta-synthesis branches with cross-group "
+                f"integration and structural trajectory assessment."
+            ),
+            agent=agent,
+        )
+        tasks.append(branch_task)
+
+    synthesis_task = Task(
+        description=(
+            f"{system_prompt}\n\n{task_text}\n\n"
+            f"You are the synthesis lead for the Big Question. "
+            f"Integrate all expert meta-synthesis branches above into "
+            f"the FINAL structured JSON answering the Big Question."
+        ),
         expected_output=(
             "Structured JSON with: stabilizing forces assessment, "
             "destabilizing forces assessment, cross-domain propagation map, "
             "structural trajectory with ICD 203 confidence, net assessment "
             "vs. last week, and Black Swan consensus challenge integration."
         ),
-        agent=lead_agent,
+        agent=agents[-1],
+        context=tasks,
     )
+    tasks.append(synthesis_task)
 
     crew = Crew(
         agents=agents,
-        tasks=[crew_task],
+        tasks=tasks,
         process=Process.sequential,
         verbose=True,
     )
@@ -258,30 +311,75 @@ def _build_group_system_prompt(
 # ── Output Handling ───────────────────────────────────────────────────
 
 def _parse_crew_output(result) -> dict:
-    """Parse CrewAI crew output into a structured dict."""
+    """Parse CrewAI crew output into a structured dict.
+
+    Tries multiple extraction strategies:
+    1. Fenced JSON block (```json ... ```)
+    2. Outermost JSON object { ... }
+    3. Outermost JSON array [ ... ]
+    4. Falls back to raw text with synthesis key
+    """
     raw = str(result)
 
-    # Try to extract JSON from the output
-    try:
-        # Look for JSON block in the output
-        if "```json" in raw:
+    # Strategy 1: Fenced JSON block
+    if "```json" in raw:
+        try:
             json_start = raw.index("```json") + 7
             json_end = raw.index("```", json_start)
             return json.loads(raw[json_start:json_end].strip())
-        elif "{" in raw and "}" in raw:
-            # Find outermost braces
-            first_brace = raw.index("{")
-            last_brace = raw.rindex("}") + 1
-            return json.loads(raw[first_brace:last_brace])
-    except (json.JSONDecodeError, ValueError):
-        pass
+        except (json.JSONDecodeError, ValueError):
+            pass
 
-    # Return as raw text if not parseable
-    return {"raw_output": raw, "synthesis": raw}
+    # Strategy 2: Find outermost JSON object
+    if "{" in raw and "}" in raw:
+        first = raw.index("{")
+        last = raw.rindex("}")
+        if last > first:
+            try:
+                return json.loads(raw[first:last + 1])
+            except json.JSONDecodeError:
+                pass
+
+    # Strategy 3: Find outermost JSON array
+    if "[" in raw and "]" in raw:
+        first = raw.index("[")
+        last = raw.rindex("]")
+        if last > first:
+            try:
+                arr = json.loads(raw[first:last + 1])
+                return {"items": arr, "synthesis": raw}
+            except json.JSONDecodeError:
+                pass
+
+    # Strategy 4: Raw text fallback — extract synthesis from prose
+    logger.warning(
+        f"Could not parse JSON from crew output ({len(raw)} chars). "
+        f"Storing as raw text."
+    )
+    return {"raw_output": raw[:50000], "synthesis": raw[:10000]}
 
 
 def _store_assessment(group_id: int, run_date: str, output: dict):
     """Store group assessment in ae_assessments table."""
+    # Extract synthesis — Group 6 uses 'big_question_answer', others use 'synthesis'
+    synthesis = (
+        output.get("synthesis")
+        or output.get("big_question_answer")
+        or output.get("raw_output", "")
+    )
+    # Truncate to avoid DB bloat but keep enough for analysis
+    if isinstance(synthesis, dict):
+        synthesis = json.dumps(synthesis, default=str)
+    synthesis = str(synthesis)[:50000]
+
+    assessment_json = json.dumps(output, default=str)
+
+    logger.info(
+        f"Storing Group {group_id} assessment: "
+        f"{len(assessment_json)} chars JSON, "
+        f"trajectory={output.get('trajectory', '?')}"
+    )
+
     with get_cursor() as cursor:
         cursor.execute(
             """INSERT INTO ae_assessments
@@ -296,9 +394,9 @@ def _store_assessment(group_id: int, run_date: str, output: dict):
             (
                 group_id,
                 run_date,
-                json.dumps(output, default=str),
-                output.get("synthesis", output.get("raw_output", "")),
-                output.get("trajectory", ""),
+                assessment_json,
+                synthesis,
+                output.get("trajectory", output.get("structural_trajectory", "")),
                 output.get("confidence_level", ""),
             ),
         )

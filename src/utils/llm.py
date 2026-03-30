@@ -15,6 +15,8 @@ from src.utils.config import get_config, get_model_for_component
 logger = logging.getLogger("sentinel2.llm")
 
 # ── Rate limiting state ──────────────────────────────────────────────
+import threading as _threading
+_rate_lock = _threading.Lock()
 _last_call_time = {"gemini_flash": 0.0, "claude_sonnet": 0.0, "claude_opus": 0.0}
 _daily_call_count = {"gemini_flash": 0, "claude_sonnet": 0, "claude_opus": 0}
 _daily_reset_date = ""
@@ -46,41 +48,43 @@ def _reset_daily_if_needed():
 
 
 def _check_rate_limit(tier: str):
-    """Enforce per-minute rate limits. Sleeps if needed."""
-    _reset_daily_if_needed()
-    config = get_config()
-    llm_cfg = config["llm"]["providers"]
+    """Enforce per-minute rate limits. Sleeps if needed. Thread-safe."""
+    with _rate_lock:
+        _reset_daily_if_needed()
+        config = get_config()
+        llm_cfg = config["llm"]["providers"]
 
-    if tier == "gemini_flash":
-        limits = llm_cfg["gemini"]["rate_limits"]["flash"]
-        max_rpm = limits["requests_per_minute"]
-        max_rpd = limits["requests_per_day"]
-    elif tier == "claude_sonnet":
-        limits = llm_cfg["anthropic"]["rate_limits"]["sonnet"]
-        max_rpm = limits["requests_per_minute"]
-        max_rpd = limits["requests_per_day"]
-    elif tier == "claude_opus":
-        limits = llm_cfg["anthropic"]["rate_limits"]["opus"]
-        max_rpm = limits["requests_per_minute"]
-        max_rpd = limits["requests_per_day"]
-    else:
-        return
+        if tier == "gemini_flash":
+            limits = llm_cfg["gemini"]["rate_limits"]["flash"]
+            max_rpm = limits["requests_per_minute"]
+            max_rpd = limits["requests_per_day"]
+        elif tier == "claude_sonnet":
+            limits = llm_cfg["anthropic"]["rate_limits"]["sonnet"]
+            max_rpm = limits["requests_per_minute"]
+            max_rpd = limits["requests_per_day"]
+        elif tier == "claude_opus":
+            limits = llm_cfg["anthropic"]["rate_limits"]["opus"]
+            max_rpm = limits["requests_per_minute"]
+            max_rpd = limits["requests_per_day"]
+        else:
+            return
 
-    if _daily_call_count[tier] >= max_rpd:
-        raise RuntimeError(f"Daily rate limit reached for {tier}: {max_rpd}")
+        if _daily_call_count[tier] >= max_rpd:
+            raise RuntimeError(f"Daily rate limit reached for {tier}: {max_rpd}")
 
-    min_interval = 60.0 / max_rpm
-    elapsed = time.time() - _last_call_time[tier]
-    if elapsed < min_interval:
-        sleep_time = min_interval - elapsed
-        logger.debug(f"Rate limiting {tier}: sleeping {sleep_time:.1f}s")
-        time.sleep(sleep_time)
+        min_interval = 60.0 / max_rpm
+        elapsed = time.time() - _last_call_time[tier]
+        if elapsed < min_interval:
+            sleep_time = min_interval - elapsed
+            logger.debug(f"Rate limiting {tier}: sleeping {sleep_time:.1f}s")
+            time.sleep(sleep_time)
 
 
 def _record_call(tier: str):
-    """Record a call for rate tracking."""
-    _last_call_time[tier] = time.time()
-    _daily_call_count[tier] += 1
+    """Record a call for rate tracking. Thread-safe."""
+    with _rate_lock:
+        _last_call_time[tier] = time.time()
+        _daily_call_count[tier] += 1
 
 
 # ── Gemini Client ────────────────────────────────────────────────────
@@ -216,6 +220,7 @@ def call_claude(
     model_name: Optional[str] = None,
     temperature: float = 0.5,
     max_tokens: int = 8192,
+    _fallback_depth: int = 0,
 ) -> str:
     """
     Call Claude API with rate limiting and retry logic.
@@ -263,9 +268,9 @@ def call_claude(
                 return ""
         except Exception as e:
             error_str = str(e)
-            # Opus → Sonnet fallback on billing/credit errors
+            # Opus → Sonnet fallback on billing/credit errors (max 1 fallback)
             if "credit balance is too low" in error_str:
-                if "opus" in api_model.lower():
+                if "opus" in api_model.lower() and _fallback_depth == 0:
                     fallback_model = "claude-sonnet-4-20250514"
                     logger.warning(
                         f"Opus credit limit hit — falling back to {fallback_model}"
@@ -276,14 +281,14 @@ def call_claude(
                         model_name=fallback_model,
                         temperature=temperature,
                         max_tokens=max_tokens,
+                        _fallback_depth=1,
                     )
-                else:
-                    # Sonnet also out of credits — fail gracefully
-                    logger.error(
-                        "Anthropic credit balance exhausted. "
-                        "Add credits at https://console.anthropic.com/settings/plans"
-                    )
-                    raise
+                # Sonnet also out, or already fell back — fail immediately
+                logger.error(
+                    "Anthropic credit balance exhausted. "
+                    "Add credits at https://console.anthropic.com/settings/plans"
+                )
+                raise
             logger.warning(f"Claude error (attempt {attempt + 1}): {e}")
             if attempt < max_retries:
                 time.sleep(backoff * (attempt + 1))
@@ -336,6 +341,28 @@ def call_llm(
         temperature = 0.5
     if max_tokens is None:
         max_tokens = 8192
+
+    # Pre-flight token estimate (~4 chars per token for English)
+    est_tokens = (len(prompt) + len(system_prompt)) // 4
+    if provider == "anthropic":
+        limit = 200_000  # Sonnet/Opus input limit
+        if est_tokens > limit:
+            logger.warning(
+                f"Prompt too large for Claude: ~{est_tokens:,} tokens "
+                f"(limit {limit:,}). Truncating prompt."
+            )
+            # Truncate prompt to fit, keeping system_prompt intact
+            max_prompt_chars = (limit - len(system_prompt) // 4) * 4
+            prompt = prompt[:max_prompt_chars]
+    elif provider == "gemini":
+        limit = 1_000_000  # Gemini Flash input limit
+        if est_tokens > limit:
+            logger.warning(
+                f"Prompt too large for Gemini: ~{est_tokens:,} tokens "
+                f"(limit {limit:,}). Truncating prompt."
+            )
+            max_prompt_chars = (limit - len(system_prompt) // 4) * 4
+            prompt = prompt[:max_prompt_chars]
 
     if provider == "gemini":
         return call_gemini(

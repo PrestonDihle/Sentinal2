@@ -136,8 +136,8 @@ def get_cursor(dictionary: bool = True):
 
 
 def execute_query(sql: str, params: tuple = None, fetch: bool = True) -> list:
-    """Execute a single query and return results (if fetch=True)."""
-    # Translate MySQL %s placeholders to SQLite ? placeholders
+    """Execute a single query and return results (if fetch=True).
+    Auto-commits for write operations (INSERT/UPDATE/DELETE)."""
     sql = _translate_sql(sql)
     conn = _get_conn()
     cursor = conn.cursor()
@@ -148,7 +148,12 @@ def execute_query(sql: str, params: tuple = None, fetch: bool = True) -> list:
             cursor.execute(sql)
         if fetch:
             return cursor.fetchall()
+        # Commit writes (non-fetch implies mutation)
+        conn.commit()
         return []
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         cursor.close()
 
@@ -217,22 +222,41 @@ def _translate_sql(sql: str) -> str:
 
 def _translate_upsert(sql: str) -> str:
     """
-    Convert MySQL ON DUPLICATE KEY UPDATE to SQLite
-    INSERT OR REPLACE (simplified upsert).
+    Convert MySQL ON DUPLICATE KEY UPDATE to SQLite ON CONFLICT DO UPDATE.
+
+    MySQL:   INSERT INTO t (a, b, c) VALUES (?, ?, ?)
+             ON DUPLICATE KEY UPDATE b = VALUES(b), c = VALUES(c)
+
+    SQLite:  INSERT INTO t (a, b, c) VALUES (?, ?, ?)
+             ON CONFLICT DO UPDATE SET b = excluded.b, c = excluded.c
+
+    Falls back to INSERT OR REPLACE if parsing fails.
     """
-    # Find where ON DUPLICATE KEY UPDATE starts
+    import re
+
     upper = sql.upper()
     idx = upper.find("ON DUPLICATE KEY UPDATE")
     if idx == -1:
         return sql
 
-    # Take only the INSERT ... VALUES part
     insert_part = sql[:idx].strip()
+    update_part = sql[idx + len("ON DUPLICATE KEY UPDATE"):].strip()
 
-    # Convert INSERT INTO to INSERT OR REPLACE INTO
+    # Parse the UPDATE assignments: "col = VALUES(col), col2 = VALUES(col2)"
+    # Convert VALUES(col) → excluded.col (SQLite syntax)
+    if update_part:
+        # Replace VALUES(colname) with excluded.colname
+        converted = re.sub(
+            r'VALUES\s*\(\s*(\w+)\s*\)',
+            r'excluded.\1',
+            update_part,
+            flags=re.IGNORECASE,
+        )
+        # Also handle plain column references like "completed_at = NOW()"
+        # (these don't use VALUES() so pass through unchanged)
+        return f"{insert_part} ON CONFLICT DO UPDATE SET {converted}"
+
+    # No update clause content — fall back to INSERT OR REPLACE
     if insert_part.upper().startswith("INSERT INTO"):
-        insert_part = "INSERT OR REPLACE INTO" + insert_part[11:]
-    elif insert_part.upper().startswith("INSERT"):
-        insert_part = "INSERT OR REPLACE" + insert_part[6:]
-
+        return "INSERT OR REPLACE INTO" + insert_part[11:]
     return insert_part

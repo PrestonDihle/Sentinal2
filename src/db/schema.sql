@@ -95,6 +95,7 @@ CREATE TABLE IF NOT EXISTS raw_collection (
 CREATE UNIQUE INDEX IF NOT EXISTS uk_url_date ON raw_collection(source_url, collection_date);
 CREATE INDEX IF NOT EXISTS idx_raw_date ON raw_collection(collection_date);
 CREATE INDEX IF NOT EXISTS idx_raw_pir ON raw_collection(pir_id);
+CREATE INDEX IF NOT EXISTS idx_raw_date_sir ON raw_collection(collection_date, sir_id);
 
 CREATE TABLE IF NOT EXISTS processed_collection (
     processed_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -121,6 +122,7 @@ CREATE TABLE IF NOT EXISTS processed_collection (
 CREATE INDEX IF NOT EXISTS idx_proc_date ON processed_collection(run_date);
 CREATE INDEX IF NOT EXISTS idx_proc_pir ON processed_collection(pir_id);
 CREATE INDEX IF NOT EXISTS idx_proc_sig ON processed_collection(significance);
+CREATE INDEX IF NOT EXISTS idx_proc_date_sig ON processed_collection(run_date, significance);
 
 -- ============================================================
 -- RUNNING ESTIMATES & SUMMARIES
@@ -214,8 +216,8 @@ CREATE TABLE IF NOT EXISTS ae_assessments (
     created_at TEXT DEFAULT (datetime('now'))
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS idx_ae_group_date ON ae_assessments(group_id, run_date);
 CREATE INDEX IF NOT EXISTS idx_ae_date ON ae_assessments(run_date);
-CREATE INDEX IF NOT EXISTS idx_ae_group ON ae_assessments(group_id);
 CREATE INDEX IF NOT EXISTS idx_ae_pir ON ae_assessments(pir_id);
 
 CREATE TABLE IF NOT EXISTS cross_references (
