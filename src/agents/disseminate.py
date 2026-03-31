@@ -1,17 +1,22 @@
 """
 SENTINEL2 — Report Dissemination
 Handles delivery of reports via Google Drive upload and email dispatch.
+Uses Gmail API (OAuth) for email — no SMTP or App Passwords needed.
 """
 
+import base64
 import json
 import logging
 import os
 from datetime import datetime
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
 from pathlib import Path
 from typing import Optional
 
 from src.db.connection import execute_query, get_cursor
-from src.utils.config import get_config
+from src.utils.config import get_config, get_project_root
 
 logger = logging.getLogger("sentinel2.disseminate")
 
@@ -26,7 +31,7 @@ def disseminate_report(
 
     Steps:
       1. Upload PDF to Google Drive
-      2. Send email with Drive link to recipients
+      2. Send email with Drive link (or without) to recipients
       3. Log delivery
 
     Returns delivery status dict.
@@ -43,14 +48,13 @@ def disseminate_report(
     drive_result = _upload_to_drive(pdf_path, report_type, run_date)
     result.update(drive_result)
 
-    # Step 2: Send email
-    if drive_result.get("drive_view_link"):
-        email_result = _send_email(
-            run_date, report_type,
-            drive_result["drive_view_link"],
-            pdf_path,
-        )
-        result.update(email_result)
+    # Step 2: Send email (with or without Drive link)
+    email_result = _send_email(
+        run_date, report_type,
+        drive_result.get("drive_view_link", ""),
+        pdf_path,
+    )
+    result.update(email_result)
 
     # Step 3: Log delivery
     _log_delivery(result)
@@ -71,36 +75,76 @@ def disseminate_black_swan_alert(
     return result
 
 
+# ── Google OAuth Credentials ─────────────────────────────────────────
+
+_cached_creds = None
+
+
+def _get_google_creds():
+    """
+    Load OAuth credentials from auth/token.json + auth/credentials.json.
+    Auto-refreshes expired tokens using the refresh_token.
+    """
+    global _cached_creds
+    if _cached_creds and _cached_creds.valid:
+        return _cached_creds
+
+    from google.oauth2.credentials import Credentials
+    from google.auth.transport.requests import Request
+
+    auth_dir = get_project_root() / "auth"
+    token_path = auth_dir / "token.json"
+    creds_path = auth_dir / "credentials.json"
+
+    creds = None
+    if token_path.exists():
+        creds = Credentials.from_authorized_user_file(
+            str(token_path),
+            scopes=[
+                "https://www.googleapis.com/auth/gmail.send",
+                "https://www.googleapis.com/auth/drive.file",
+            ],
+        )
+
+    if creds and creds.expired and creds.refresh_token:
+        logger.info("Refreshing expired Google OAuth token")
+        creds.refresh(Request())
+        # Persist refreshed token
+        token_path.write_text(creds.to_json())
+        logger.info("Token refreshed and saved")
+
+    if not creds or not creds.valid:
+        raise RuntimeError(
+            "Google OAuth token missing or invalid. "
+            "Run: python -m src.utils.google_auth to re-authenticate."
+        )
+
+    _cached_creds = creds
+    return creds
+
+
 # ── Google Drive Upload ───────────────────────────────────────────────
 
 def _upload_to_drive(pdf_path: str, report_type: str, run_date: str) -> dict:
-    """Upload PDF to Google Drive."""
+    """Upload PDF to Google Drive using OAuth credentials."""
     config = get_config()
     drive_cfg = config.get("delivery", {}).get("google_drive", {})
 
-    if not drive_cfg.get("enabled", False):
-        logger.info("Google Drive upload disabled in config")
-        return {"drive_upload_status": "disabled"}
-
-    folder_id = os.environ.get(
-        drive_cfg.get("folder_id_env", "SENTINEL_DRIVE_FOLDER_ID"), ""
+    # Look up the folder ID env var for this report type
+    folder_env_key = drive_cfg.get(
+        f"{report_type}_folder_id_env",
+        drive_cfg.get("daily_folder_id_env", "SENTINEL_DRIVE_DAILY_FOLDER_ID"),
     )
+    folder_id = os.environ.get(folder_env_key, "")
     if not folder_id:
-        logger.warning("No Drive folder ID configured")
+        logger.info(f"No Drive folder ID for {report_type} (env: {folder_env_key})")
         return {"drive_upload_status": "no_folder_id"}
 
     try:
-        from google.oauth2.service_account import Credentials
         from googleapiclient.discovery import build
         from googleapiclient.http import MediaFileUpload
 
-        creds_path = os.environ.get(
-            drive_cfg.get("credentials_env", "GOOGLE_APPLICATION_CREDENTIALS"), ""
-        )
-        creds = Credentials.from_service_account_file(
-            creds_path,
-            scopes=["https://www.googleapis.com/auth/drive.file"],
-        )
+        creds = _get_google_creds()
         service = build("drive", "v3", credentials=creds)
 
         file_name = Path(pdf_path).name
@@ -127,7 +171,7 @@ def _upload_to_drive(pdf_path: str, report_type: str, run_date: str) -> dict:
         return {"drive_upload_status": f"failed: {e}"}
 
 
-# ── Email Dispatch ────────────────────────────────────────────────────
+# ── Email Dispatch (Gmail API) ───────────────────────────────────────
 
 def _send_email(
     run_date: str,
@@ -135,13 +179,16 @@ def _send_email(
     drive_link: str,
     pdf_path: str,
 ) -> dict:
-    """Send report notification email to recipients."""
+    """
+    Send report email via Gmail API (OAuth).
+    No SMTP, no App Passwords — uses auth/token.json credentials.
+    """
     config = get_config()
-    email_cfg = config.get("delivery", {}).get("email", {})
-
-    if not email_cfg.get("enabled", False):
-        logger.info("Email dispatch disabled in config")
-        return {"email_send_status": "disabled"}
+    gmail_cfg = config.get("delivery", {}).get("gmail", {})
+    sender = gmail_cfg.get("sender_email", "")
+    if not sender:
+        logger.warning("No sender_email in delivery.gmail config")
+        return {"email_send_status": "no_sender_configured"}
 
     # Fetch active recipients
     recipients = execute_query(
@@ -165,34 +212,35 @@ def _send_email(
     }
     subject = subject_map.get(report_type, f"SENTINEL2 Report — {run_date}")
 
-    body = (
-        f"SENTINEL2 {report_type.replace('_', ' ').title()} Report\n"
-        f"Date: {run_date}\n\n"
-        f"View report: {drive_link}\n\n"
-        f"Classification: UNCLASSIFIED // AI GENERATED\n"
-        f"Objective. Non-Partisan. Actionable."
-    )
+    body_lines = [
+        f"SENTINEL2 {report_type.replace('_', ' ').title()} Report",
+        f"Date: {run_date}",
+        "",
+    ]
+    if drive_link:
+        body_lines.append(f"View report: {drive_link}")
+        body_lines.append("")
+    body_lines.extend([
+        "Classification: UNCLASSIFIED // AI GENERATED",
+        "Objective. Non-Partisan. Actionable.",
+    ])
+    body = "\n".join(body_lines)
 
     try:
-        import smtplib
-        from email.mime.text import MIMEText
-        from email.mime.multipart import MIMEMultipart
-        from email.mime.application import MIMEApplication
+        from googleapiclient.discovery import build
 
-        smtp_host = os.environ.get(email_cfg.get("smtp_host_env", ""), "")
-        smtp_port = int(os.environ.get(email_cfg.get("smtp_port_env", ""), "587"))
-        smtp_user = os.environ.get(email_cfg.get("smtp_user_env", ""), "")
-        smtp_pass = os.environ.get(email_cfg.get("smtp_password_env", ""), "")
-        from_addr = email_cfg.get("from_address", smtp_user)
+        creds = _get_google_creds()
+        service = build("gmail", "v1", credentials=creds)
 
+        # Build MIME message
         msg = MIMEMultipart()
         msg["Subject"] = subject
-        msg["From"] = from_addr
+        msg["From"] = sender
         msg["To"] = ", ".join(to_list)
         msg.attach(MIMEText(body, "plain"))
 
-        # Attach PDF
-        if Path(pdf_path).exists():
+        # Attach PDF if it exists
+        if pdf_path and Path(pdf_path).exists():
             with open(pdf_path, "rb") as f:
                 attachment = MIMEApplication(f.read(), _subtype="pdf")
                 attachment.add_header(
@@ -201,21 +249,30 @@ def _send_email(
                 )
                 msg.attach(attachment)
 
-        with smtplib.SMTP(smtp_host, smtp_port) as server:
-            server.starttls()
-            if smtp_user and smtp_pass:
-                server.login(smtp_user, smtp_pass)
-            server.sendmail(from_addr, to_list, msg.as_string())
+        # Encode and send via Gmail API
+        raw_message = base64.urlsafe_b64encode(
+            msg.as_bytes()
+        ).decode("ascii")
 
-        logger.info(f"Email sent to {len(to_list)} recipients")
+        sent = service.users().messages().send(
+            userId="me",
+            body={"raw": raw_message},
+        ).execute()
+
+        message_id = sent.get("id", "")
+        logger.info(
+            f"Email sent via Gmail API to {len(to_list)} recipients "
+            f"(message ID: {message_id})"
+        )
         return {
             "email_send_status": "ok",
+            "email_message_id": message_id,
             "email_recipients": to_list,
             "email_send_timestamp": datetime.utcnow().isoformat(),
         }
 
     except Exception as e:
-        logger.error(f"Email dispatch failed: {e}")
+        logger.error(f"Gmail API dispatch failed: {e}")
         return {"email_send_status": f"failed: {e}"}
 
 
